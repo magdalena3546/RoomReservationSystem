@@ -7,8 +7,11 @@ namespace RoomReservationSystem.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+        public DbSet<User> Users => Set<User>();
+
         public DbSet<Room> Rooms => Set<Room>();
         public DbSet<Reservation> Reservations => Set<Reservation>();
-        public DbSet<User> Users => Set<User>();
+        public DbSet<Guest> Guests => Set<Guest>();
+
     }
 }

@@ -24,7 +24,7 @@ namespace RoomReservationSystem.Controllers
         {
             return Ok(_context.Reservations
                 .Include(r => r.Room)
-                .Include(r => r.User)
+                .Include(r => r.Guest)
                 .ToList());
         }
 
@@ -33,7 +33,15 @@ namespace RoomReservationSystem.Controllers
         [Authorize(Roles = "Admin,Employee")]
         public ActionResult<Reservation> CreateReservation(Reservation reservation)
         {
-         
+
+            var room = _context.Rooms.FirstOrDefault(r => r.Id == reservation.RoomId);
+            if (room == null)
+                return BadRequest("Invalid RoomId.");
+
+            var guest = _context.Guests.FirstOrDefault(g => g.Id == reservation.GuestId);
+            if (guest == null)
+                return BadRequest("Invalid GuestId.");
+
             var isConflict = _context.Reservations.Any(r =>
                 r.RoomId == reservation.RoomId &&
                 r.StartTime < reservation.EndTime &&

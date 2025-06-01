@@ -5,7 +5,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using RoomReservationSystem.Models;
 
-
 namespace RoomReservationSystem
 {
     public class Program
@@ -17,7 +16,11 @@ namespace RoomReservationSystem
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseInMemoryDatabase("RoomReservationDb"));
 
-            builder.Services.AddControllers();
+
+            builder.Services.AddControllers()
+                .AddJsonOptions(x =>
+                    x.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
@@ -32,23 +35,22 @@ namespace RoomReservationSystem
                 });
 
                 c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    {
-        {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-            {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
                 {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] {}
-        }
-    });
+                    {
+                        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                        {
+                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                            {
+                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
             });
 
-
-            var key = "super_secret_key_1234567890_super_secret_key";
+            var key = builder.Configuration["Jwt:Key"];
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
@@ -63,27 +65,42 @@ namespace RoomReservationSystem
                     };
                 });
 
-
             var app = builder.Build();
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            //if (app.Environment.IsDevelopment())
+            //{
+            //    app.UseSwagger();
+            //    app.UseSwaggerUI();
+            //}
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
-
-            app.UseMiddleware<RoomReservationSystem.Middleware.LogHeadersMiddleware>();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();
 
+
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+         
+                if (!db.Guests.Any())
+                {
+                    db.Guests.Add(new Guest { Name = "John Doe", Email = "john@example.com" });
+                    db.Guests.Add(new Guest { Name = "Jane Smith", Email = "jane@example.com" });
+                }
+
+               
+                if (!db.Rooms.Any())
+                {
+                    db.Rooms.Add(new Room { Name = "Room A", Capacity = 10 });
+                    db.Rooms.Add(new Room { Name = "Room B", Capacity = 20 });
+                }
 
                
                 if (!db.Users.Any())
@@ -91,7 +108,7 @@ namespace RoomReservationSystem
                     db.Users.Add(new User
                     {
                         Email = "admin@example.com",
-                        PasswordHash = "admin123",
+                        PasswordHash = "admin123", 
                         Role = "Admin"
                     });
 
@@ -101,9 +118,9 @@ namespace RoomReservationSystem
                         PasswordHash = "employee123",
                         Role = "Employee"
                     });
-
-                    db.SaveChanges();
                 }
+
+                db.SaveChanges();
             }
 
 
