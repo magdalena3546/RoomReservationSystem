@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using RoomReservationSystem.Models;
+using RoomReservationSystem.Services;
+using SoapCore;
 
 namespace RoomReservationSystem
 {
@@ -13,8 +15,10 @@ namespace RoomReservationSystem
         {
             var builder = WebApplication.CreateBuilder(args);
 
+
             builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseInMemoryDatabase("RoomReservationDb"));
+                    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 
 
             builder.Services.AddControllers()
@@ -65,50 +69,62 @@ namespace RoomReservationSystem
                     };
                 });
 
-            var app = builder.Build();
+            builder.Services.AddScoped<IRoomAvailabilityService, RoomAvailabilityService>();
 
-            //if (app.Environment.IsDevelopment())
-            //{
-            //    app.UseSwagger();
-            //    app.UseSwaggerUI();
-            //}
+            builder.Services.AddRazorPages();
+       
+
+            builder.Services.AddHttpClient();
+            builder.Services.AddSession();
+
+            var app = builder.Build();
 
             app.UseSwagger();
             app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
 
+            app.UseStaticFiles();
+
+            app.UseRouting();
+            app.UseMiddleware<RoomReservationSystem.Middleware.LogHeadersMiddleware>();
+
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapControllers();
+     
+            app.UseSession();
 
+  
+
+            app.MapControllers();
+            app.UseSoapEndpoint<IRoomAvailabilityService>("/RoomAvailabilityService.svc", new SoapEncoderOptions());
+            app.MapRazorPages();
+
+     
 
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-         
                 if (!db.Guests.Any())
                 {
                     db.Guests.Add(new Guest { Name = "John Doe", Email = "john@example.com" });
                     db.Guests.Add(new Guest { Name = "Jane Smith", Email = "jane@example.com" });
                 }
 
-               
                 if (!db.Rooms.Any())
                 {
                     db.Rooms.Add(new Room { Name = "Room A", Capacity = 10 });
                     db.Rooms.Add(new Room { Name = "Room B", Capacity = 20 });
                 }
 
-               
                 if (!db.Users.Any())
                 {
                     db.Users.Add(new User
                     {
                         Email = "admin@example.com",
-                        PasswordHash = "admin123", 
+                        PasswordHash = "admin123",
                         Role = "Admin"
                     });
 
@@ -122,7 +138,6 @@ namespace RoomReservationSystem
 
                 db.SaveChanges();
             }
-
 
             app.Run();
         }

@@ -17,7 +17,7 @@ namespace RoomReservationSystem.Controllers
             _context = context;
         }
 
-        // GET: /api/Reservation
+        
         [HttpGet]
         [Authorize(Roles = "Admin,Employee")]
         public ActionResult<IEnumerable<Reservation>> GetReservations()
@@ -28,7 +28,7 @@ namespace RoomReservationSystem.Controllers
                 .ToList());
         }
 
-        // POST: /api/Reservation
+        
         [HttpPost]
         [Authorize(Roles = "Admin,Employee")]
         public ActionResult<Reservation> CreateReservation(Reservation reservation)

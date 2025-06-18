@@ -1,0 +1,21 @@
+﻿@page
+@model RoomsModel
+@{
+    ViewData["Title"] = "Rooms";
+}
+
+<h2>Rooms</h2>
+
+@if (Model.Rooms != null)
+{
+    <ul>
+        @foreach (var room in Model.Rooms)
+        {
+            <li>@room.Name (Capacity: @room.Capacity)</li>
+        }
+    </ul>
+}
+else
+{
+    <p>Loading rooms...</p>
+}

@@ -1,0 +1,36 @@
+﻿@page
+@model RoomReservationSystem.Pages.ReservationsModel
+@{
+    ViewData["Title"] = "Reservations";
+}
+
+<h2>Reservations</h2>
+
+@if (Model.Reservations.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Room</th>
+                <th>Guest</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var reservation in Model.Reservations)
+            {
+                <tr>
+                    <td>@reservation.Room?.Name</td>
+                    <td>@reservation.Guest?.Name</td>
+                    <td>@reservation.StartTime</td>
+                    <td>@reservation.EndTime</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No reservations found.</p>
+}

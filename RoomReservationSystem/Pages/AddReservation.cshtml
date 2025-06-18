@@ -1,0 +1,29 @@
+﻿@page
+@model RoomReservationSystem.Pages.AddReservationModel
+@{
+    ViewData["Title"] = "Add Reservation";
+}
+
+<h2>Add Reservation</h2>
+
+<form method="post">
+    <div>
+        <label asp-for="RoomId">Room ID:</label>
+        <input asp-for="RoomId" type="number" class="form-control" />
+    </div>
+    <div>
+        <label asp-for="GuestId">Guest ID:</label>
+        <input asp-for="GuestId" type="number" class="form-control" />
+    </div>
+    <div>
+        <label asp-for="StartTime">Start Time:</label>
+        <input asp-for="StartTime" type="datetime-local" class="form-control" />
+    </div>
+    <div>
+        <label asp-for="EndTime">End Time:</label>
+        <input asp-for="EndTime" type="datetime-local" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Add</button>
+</form>
+
+<p style="color: red;">@Model.ErrorMessage</p>
